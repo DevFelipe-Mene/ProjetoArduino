@@ -22,7 +22,7 @@ float tempSetado, vO, logR2, t, tc, r2, tempLast,  tempAtualLast, tempAgua = 20.
 float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07, r1 = 10000;
 unsigned char sB, sA, sP;
 void setup() {
-  Serial.begin(9600);
+  Serial.begin(115200);
   pinMode(mais, INPUT);
   pinMode(menos, INPUT);
   pinMode(play, INPUT);
@@ -44,13 +44,15 @@ void loop() {
   if (digitalRead(mais) == LOW) {
     tempo = tempo + 1;
     tempoSalvo = tempo;
-    delay(200);
+    Serial.print("Tempo:");
     Serial.println(tempo);
+    delay(200);
   }
   //Decrementa
   if (digitalRead(menos) == LOW && (tempo >= 1)) {
     tempo = tempo - 1;
     tempoSalvo = tempo;
+    Serial.print("Tempo:");
     Serial.println(tempo);
     delay(200);
     if (tempo <= 1) {
@@ -62,25 +64,23 @@ void loop() {
   if (digitalRead(play) == LOW && tempo > 0) {
     Serial.println("");
     Serial.println("-------- Iniciado! ---------");
+    Serial.print("Temperatura escolhida:");
+    Serial.println(tempSetado);
     do {
       delay(1000);
       digitalWrite(bomba, HIGH);
-      sB = "Ligado";
-      Serial.print("Bomba:");
-      Serial.println(sB);
+      Serial.println("Bomba:on");
+      Serial.print("Temperatura Atual:");
+      Serial.println(tempAgua);
       oledTempAtual(tempAgua);
       tempo--;
       if (tempAgua >= tempSetado) {
         digitalWrite(aquecedor, LOW);
-        sA = "Desligado - temperatura atingida";
-        Serial.print("Aquecedor:");
-        Serial.println(sA);
+        Serial.println("Aquecedor:off");
       } else {
         tempAgua++;
         digitalWrite(aquecedor, HIGH);
-        sA = "Ligado";
-        Serial.print("Aquecedor:");
-        Serial.println(sA);
+        Serial.println("Aquecedor:on");
       }
       Serial.print(tempo);
       Serial.println(" segundos");
@@ -88,31 +88,24 @@ void loop() {
       Serial.println(" C");
       //Pausa
       if (digitalRead(play) == LOW) {
-        sP = "Encerrado pelo usuario";
-        Serial.print("Status Play/Pause:");
-        Serial.print(sP);
         Serial.println("Encerrado pelo usuario!");
         digitalWrite(bomba, LOW);
         digitalWrite(aquecedor, LOW);
-        sB = "Desligado";
-        sA = "Desligado";
-        Serial.print("Bomba:");
-        Serial.println(sB);
-        Serial.print("Aquecedor:");
-        Serial.println(sA);
+        Serial.println("Bomba:off");
+        Serial.println("Aquecedor:off");
         tempo = 0;
       }
       oledTempoAtual(tempo);
     } while (tempo > 0 && digitalRead(play) == HIGH);
     oledTempoAtual(tempo);
     Serial.println("Sistema encerrado!");
-    sP = "Encerrado";
-    Serial.print(sP);
     digitalWrite(bomba, LOW);
     digitalWrite(aquecedor, LOW);
+    Serial.println("Bomba:off");
+    Serial.println("Aquecedor:off");
     if (tempo == 0) {
       digitalWrite(led, HIGH);
-      //digitalWrite(buzzer, HIGH);
+      digitalWrite(buzzer, HIGH);
     }
   }
 }
@@ -138,11 +131,11 @@ void oledTemp(float temp) {
   oled.display();
 }
 void oledTempAtual(float tempAtual) {
-  oled.setCursor(0, 20);
+  oled.setCursor(0, 15);
   oled.setTextColor(BLACK);
   oled.print("Temp Atual:");
   oled.print(tempAtualLast);
-  oled.setCursor(0, 20);
+  oled.setCursor(0, 15);
   oled.setTextColor(WHITE);
   oled.print("Temp Atual:");
   oled.print(tempAtual);
